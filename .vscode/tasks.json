@@ -1,0 +1,44 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Home Assistant",
+      "type": "shell",
+      "command": "/workspaces/hacs/.devcontainer/supervisor_run",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Initial Setup",
+      "type": "shell",
+      "command": "sudo cp /workspaces/hacs/.devcontainer/intial_setup.tar /tmp/supervisor_data/backup/ && ha backup reload && ha backup restore 5e173c26",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "never"
+      }
+    },
+    {
+      "label": "Sync Components",
+      "type": "shell",
+      "command": "sudo rsync -avu --delete /workspaces/hacs/custom_components /tmp/supervisor_data/homeassistant",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "never"
+      }
+    }
+  ]
+}
