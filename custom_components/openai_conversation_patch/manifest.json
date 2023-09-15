@@ -1,0 +1,15 @@
+{
+  "domain": "openai_conversation_patch",
+  "name": "OpenAI Conversation Patch",
+  "documentation": "https://gitlab.hedenstroem.com/home-assistant/hacs/openai-conversation-patch",
+  "version": "0.0.1",
+  "requirements": [
+    "voluptuous>=0.13.1"
+  ],
+  "dependencies": [
+    "conversation"
+  ],
+  "codeowners": [
+    "@ehedenst"
+  ]
+}
