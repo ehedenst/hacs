@@ -1,76 +1,55 @@
-from typing import List, Dict, Any, Optional, Tuple
 import re
+import json
 import logging
 
-import voluptuous as vol
-import homeassistant.components.conversation
-from homeassistant.components import conversation
-from homeassistant.core import Context
-from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import intent
-
-from .const import (
-    ATTR_RESPONSE_PARSER_START,
-    ATTR_RESPONSE_PARSER_END,
-    ATTR_FIRE_INTENT_NAME,
-    DEFAULT_PARSER_TOKEN,
-    DEFAULT_INTENT_NAME,
-    DOMAIN
-)
+from homeassistant.exceptions import ServiceNotFound
+from homeassistant.components import conversation
+from homeassistant.components.openai_conversation import OpenAIAgent
 
 _LOGGER = logging.getLogger(__name__)
 
-CONFIG_SCHEMA = vol.Schema({
-    DOMAIN: vol.Schema({
-        vol.Required(ATTR_RESPONSE_PARSER_START, default=DEFAULT_PARSER_TOKEN): cv.string,
-        vol.Required(ATTR_RESPONSE_PARSER_END, default=DEFAULT_PARSER_TOKEN): cv.string,
-        vol.Required(ATTR_FIRE_INTENT_NAME, default=DEFAULT_INTENT_NAME): cv.slugify
-    })
-}, extra=vol.ALLOW_EXTRA)
+def parse_response(res):
+    p = re.compile(r"(?P<speech>.*)(?P<json>\[.*?\])", re.S | re.M)
+    m = p.search(res)
+    try:
+        return m.group("speech").strip(), json.loads(m.group("json")), None
+    except Exception as e:
+        return res, [], e
 
 async def async_setup(hass, config):
-    """Set up the openai_override component."""
-
-    from homeassistant.components.openai_conversation import OpenAIAgent
 
     original = OpenAIAgent.async_process
 
     async def async_process(self, user_input: conversation.ConversationInput) -> conversation.ConversationResult:
-        """Handle OpenAI intent."""
+
         result = await original(self, user_input)
-        _LOGGER.info("Error code: {}".format(result.response.error_code))
         if result.response.error_code is not None:
+            _LOGGER.warning("Error code: {}".format(result.response.error_code))
             return result
 
-        import json
-        _LOGGER.info(json.dumps(result.response.speech))
-
-        content = ""
-        segments = result.response.speech["plain"]["speech"].splitlines()
-        for segment in segments:
-            _LOGGER.info("Segment: {}".format(segment))
-            if segment.startswith("{"):
-                service_call = json.loads(segment)
-                service = service_call.pop("service")
-                if not service or not service_call:
-                    _LOGGER.info('Missing information')
-                    continue
-                await hass.services.async_call(
-                        service.split(".")[0],
-                        service.split(".")[1],
-                        service_call,
-                        blocking=True,
-                        limit=0.3)
-            else:
-                content = "{}.  {}".format(content, segment)
-
-        intent_response = intent.IntentResponse(language=user_input.language)
-        intent_response.async_set_speech(content)
-        return conversation.ConversationResult(
-            response=intent_response, conversation_id=result.conversation_id
-        )
-
+        speech, service_calls, error = parse_response(result.response.speech["plain"]["speech"])
+        if error is None:
+            _LOGGER.debug("speech: {}".format(speech))
+            for service_data in service_calls:
+                domain, service = service_data.pop("service").split(".", 1)
+                _LOGGER.debug("{}.{}: {}".format(domain, service, service_data))
+                try:
+                    await hass.services.async_call(domain, service, service_data)
+                except ServiceNotFound as e:
+                    _LOGGER.warning(e)
+                except ValueError as e:
+                    _LOGGER.warning(e)
+            intent_response = intent.IntentResponse(language=user_input.language)
+            intent_response.async_set_speech(speech)
+            return conversation.ConversationResult(
+                response=intent_response, conversation_id=result.conversation_id
+            )
+        else:
+            _LOGGER.warning(error)
+            return result
 
     OpenAIAgent.async_process = async_process
+    _LOGGER.info("Patched OpenAIAgent.async_process")
 
     return True

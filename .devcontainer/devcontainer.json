@@ -13,7 +13,8 @@
       "extensions": [
         "timonwong.shellcheck",
         "esbenp.prettier-vscode",
-        "ms-azuretools.vscode-docker"
+        "ms-azuretools.vscode-docker",
+        "mutantdino.resourcemonitor"
       ],
       "settings": {
         "terminal.integrated.profiles.linux": {

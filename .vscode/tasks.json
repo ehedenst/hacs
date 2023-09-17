@@ -17,9 +17,9 @@
       }
     },
     {
-      "label": "Initial Setup",
+      "label": "Restore Backup",
       "type": "shell",
-      "command": "sudo cp /workspaces/hacs/.devcontainer/intial_setup.tar /tmp/supervisor_data/backup/ && ha backup reload && ha backup restore 5e173c26",
+      "command": "sudo cp /workspaces/hacs/.devcontainer/ec081436.tar /tmp/supervisor_data/backup/ && ha backup reload && ha backup restore ec081436",
       "group": {
         "kind": "test",
         "isDefault": false
@@ -29,9 +29,21 @@
       }
     },
     {
-      "label": "Sync Components",
+      "label": "Sync Configuration",
       "type": "shell",
-      "command": "sudo rsync -avu --delete /workspaces/hacs/custom_components /tmp/supervisor_data/homeassistant",
+      "command": "sudo cp /workspaces/hacs/.devcontainer/configuration.yaml /tmp/supervisor_data/homeassistant/ && ha core restart",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "never"
+      }
+    },
+    {
+      "label": "Sync Custom Components",
+      "type": "shell",
+      "command": "sudo rsync -avu --delete /workspaces/hacs/custom_components /tmp/supervisor_data/homeassistant && ha core restart",
       "group": {
         "kind": "test",
         "isDefault": false
