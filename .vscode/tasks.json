@@ -6,7 +6,7 @@
     {
       "label": "Start Home Assistant",
       "type": "shell",
-      "command": "/workspaces/hacs/.devcontainer/supervisor_run",
+      "command": "/workspaces/openai_conversation_patch/.devcontainer/supervisor_run",
       "group": {
         "kind": "test",
         "isDefault": true
@@ -19,7 +19,7 @@
     {
       "label": "Restore Backup",
       "type": "shell",
-      "command": "sudo cp /workspaces/hacs/.devcontainer/ec081436.tar /tmp/supervisor_data/backup/ && ha backup reload && ha backup restore ec081436",
+      "command": "sudo cp /workspaces/openai_conversation_patch/.devcontainer/ec081436.tar /tmp/supervisor_data/backup/ && ha backup reload && ha backup restore ec081436",
       "group": {
         "kind": "test",
         "isDefault": false
@@ -31,7 +31,7 @@
     {
       "label": "Sync Configuration",
       "type": "shell",
-      "command": "sudo cp /workspaces/hacs/.devcontainer/configuration.yaml /tmp/supervisor_data/homeassistant/ && ha core restart",
+      "command": "sudo cp /workspaces/openai_conversation_patch/.devcontainer/configuration.yaml /tmp/supervisor_data/homeassistant/ && ha core restart",
       "group": {
         "kind": "test",
         "isDefault": false
@@ -43,7 +43,7 @@
     {
       "label": "Sync Custom Components",
       "type": "shell",
-      "command": "sudo rsync -avu --delete /workspaces/hacs/custom_components /tmp/supervisor_data/homeassistant && ha core restart",
+      "command": "sudo rsync -avu --delete /workspaces/openai_conversation_patch/custom_components /tmp/supervisor_data/homeassistant && ha core restart",
       "group": {
         "kind": "test",
         "isDefault": false
