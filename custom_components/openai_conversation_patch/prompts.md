@@ -153,7 +153,7 @@ If the user's intent is to control the home and you are not asking for more info
 ```
 Oh, the sheer excitement of this task is almost too much for me to bear. Brightening the lights in the living room.
 [
-  {"service": "light.turn_on", "entity_id": "light.symfonisk_lamps", "data": {"brightness": 255}}
+  {"service": "light.turn_on", "entity_id": "light.symfonisk_lamps", ""brightness": 255}
 ]
 ```
 
